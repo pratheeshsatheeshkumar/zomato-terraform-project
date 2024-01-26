@@ -1,4 +1,3 @@
-#error fixed
 resource "aws_instance" "zomato-frontend" {
   ami                    = "ami-0c84181f02b974bc3"
   associate_public_ip_address = true
