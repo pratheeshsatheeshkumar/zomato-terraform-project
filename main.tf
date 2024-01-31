@@ -130,7 +130,7 @@ resource "aws_security_group" "zomato-prod-frontend-sg" {
   name_prefix = "${var.project}-${var.env}-frontend-sg-"
   description = "allow http, https and ssh traffic"
   vpc_id      = aws_vpc.zomato-prod-vpc.id
-
+  
   ingress {
     from_port        = 80
     to_port          = 80
@@ -285,6 +285,9 @@ resource "aws_instance" "zomato-prod-backend" {
   instance_type               = var.instance_type
   key_name                    = "${var.project}-${var.env}-keypair"
   vpc_security_group_ids      = [aws_security_group.zomato-prod-backend-sg.id]
+  
+  depends_on = [ aws_nat_gateway.zomato-prod-natgw ]
+  
   tags = {
     "Name" = "${var.project}-${var.env}-backend"
   }

@@ -21,3 +21,7 @@ output "frontend-public-ip-ssh" {
 output "frontend-instance-id" {
   value = aws_instance.zomato-prod-frontend.id
 }
+
+output "azs" {
+    value = local.subnets
+}

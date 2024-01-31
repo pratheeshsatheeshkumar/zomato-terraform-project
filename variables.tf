@@ -50,3 +50,8 @@ variable "zomato-prod-private1-config" {
     az   = "ap-south-1b"
   }
 }
+
+
+locals {
+  subnets = length(data.aws_availability_zones.az.names)
+}
