@@ -3,6 +3,7 @@ resource "aws_vpc" "zomato-prod-vpc" {
   instance_tenancy     = "default"
   enable_dns_hostnames = true
   enable_dns_support   = true
+  
   tags = {
     "Name" = "${var.project}-${var.env}-vpc"
   }
@@ -153,7 +154,9 @@ resource "aws_security_group" "zomato-prod-frontend-sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.zomato-prod-bastion-sg.id]
+    #security_groups = [aws_security_group.zomato-prod-bastion-sg.id]
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   egress {
@@ -259,11 +262,34 @@ resource "aws_instance" "zomato-prod-frontend" {
   tags = {
     "Name" = "${var.project}-${var.env}-frontend"
   }
+
+  connection {
+    type = "ssh"
+    user = "ec2-user"
+    private_key = file("/home/ubuntu/keys/aws_key")
+    host = self.public_ip
+  }
+  
+  
+  provisioner "file" {
+    source = "apache_install.sh"
+    destination = "/tmp/apache_install.sh"
+      
+  }
+
+  provisioner "remote-exec" {
+       
+    inline = [
+      "sudo chmod +x /tmp/apache_install.sh",
+      "sudo /tmp/apache_install.sh"
+      ]  
+  }
+ 
 }
 
 
 # Instance creation of zomato-prod-bastion
-
+/*
 resource "aws_instance" "zomato-prod-bastion" {
   ami                         = var.instance_ami
   associate_public_ip_address = true
@@ -292,3 +318,4 @@ resource "aws_instance" "zomato-prod-backend" {
     "Name" = "${var.project}-${var.env}-backend"
   }
 }
+*/
