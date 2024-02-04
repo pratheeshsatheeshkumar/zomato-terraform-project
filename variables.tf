@@ -50,7 +50,10 @@ variable "zomato-prod-private1-config" {
     az   = "ap-south-1b"
   }
 }
-
+variable "port_list" {
+  type = list(string)
+  default = [80,443,22]
+}
 
 locals {
   subnets = length(data.aws_availability_zones.az.names)

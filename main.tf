@@ -48,16 +48,16 @@ resource "aws_subnet" "zomato-prod-private1" {
     "Name" = "${var.project}-${var.env}-private1"
   }
 }
-
+/*  
 resource "aws_eip" "zomato-prod-eip-nat" {
   domain = "vpc"
   tags = {
     "Name" = "${var.project}-${var.env}-eip-nat"
   }
 }
+*/
 
-
-resource "aws_nat_gateway" "zomato-prod-natgw" {
+/*resource "aws_nat_gateway" "zomato-prod-natgw" {
   allocation_id = aws_eip.zomato-prod-eip-nat.id
   subnet_id     = aws_subnet.zomato-prod-public2.id
 
@@ -69,6 +69,7 @@ resource "aws_nat_gateway" "zomato-prod-natgw" {
   # on the Internet Gateway for the VPC.
   depends_on = [aws_internet_gateway.igw]
 }
+*/
 
 resource "aws_route_table" "zomato-prod-rt-public" {
   vpc_id = aws_vpc.zomato-prod-vpc.id
@@ -84,7 +85,7 @@ resource "aws_route_table" "zomato-prod-rt-public" {
   }
 }
 
-
+/*
 resource "aws_route_table" "zomato-prod-rt-private" {
   vpc_id = aws_vpc.zomato-prod-vpc.id
 
@@ -97,7 +98,7 @@ resource "aws_route_table" "zomato-prod-rt-private" {
     Name = "${var.project}-${var.env}-rt-private"
   }
 }
-
+*/
 resource "aws_route_table_association" "zomato-prod-rt_subnet-assoc1" {
   subnet_id      = aws_subnet.zomato-prod-public1.id
   route_table_id = aws_route_table.zomato-prod-rt-public.id
@@ -107,12 +108,12 @@ resource "aws_route_table_association" "zomato-prod-rt_subnet-assoc2" {
   subnet_id      = aws_subnet.zomato-prod-public2.id
   route_table_id = aws_route_table.zomato-prod-rt-public.id
 }
-
+/*
 resource "aws_route_table_association" "zomato-prod-rt_subnet-assoc3" {
   subnet_id      = aws_subnet.zomato-prod-private1.id
   route_table_id = aws_route_table.zomato-prod-rt-private.id
 }
-
+*/
 
 
 
@@ -125,40 +126,14 @@ resource "aws_key_pair" "aws-keypair" {
 }
 
 
+
 #Creation of security group for zomato-frontend
 
 resource "aws_security_group" "zomato-prod-frontend-sg" {
   name_prefix = "${var.project}-${var.env}-frontend-sg-"
   description = "allow http, https and ssh traffic"
   vpc_id      = aws_vpc.zomato-prod-vpc.id
-  
-  ingress {
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-
-  }
-
-  ingress {
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-
-  }
-
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    #security_groups = [aws_security_group.zomato-prod-bastion-sg.id]
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
+ 
   egress {
     from_port        = 0
     to_port          = 0
@@ -169,12 +144,29 @@ resource "aws_security_group" "zomato-prod-frontend-sg" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [ tags ]
+    
   }
 
   tags = {
     "Name" = "${var.project}-${var.env}-frontend-sg"
   }
 }
+
+#Addition of ingress sg rules to zomato-prod-frontend-sg 
+resource "aws_security_group_rule" "frontend-rules" {
+  for_each = toset(var.port_list)
+  type              = "ingress"
+  from_port         = each.value
+  to_port           = each.value
+  protocol          = "tcp"
+  cidr_blocks      = ["0.0.0.0/0"]
+  ipv6_cidr_blocks = ["::/0"]
+  security_group_id = aws_security_group.zomato-prod-frontend-sg.id
+}
+
+
+
 
 #Creation of security group for zomato-bastion
 
