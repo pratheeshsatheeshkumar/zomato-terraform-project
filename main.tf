@@ -144,8 +144,8 @@ resource "aws_security_group" "zomato-prod-frontend-sg" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [ tags ]
-    
+    ignore_changes = [ aws_internet_gatewa.igw.tags ]
+    replace_triggered_by = [ aws_security_group_rule.frontend-rules.id ]
   }
 
   tags = {
